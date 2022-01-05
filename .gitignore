@@ -1,0 +1,12 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+dist
+.parcel-cache
+
+#Hardhat files
+cache
+artifacts
+
