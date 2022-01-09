@@ -2,6 +2,7 @@ import React from 'react'
 import {
   addRating,
   getRatingsFromBlockchain,
+  listenToEvents,
   useContract,
   useSigner,
 } from './helpers/web3'
@@ -38,8 +39,10 @@ const TodayScoreCount = styled.h3`
 export const App = () => {
   const signer = useSigner()
   const contract = useContract(signer)
-  const ratings = getRatingsFromBlockchain(contract)
+  const [ratings, setRatings] = getRatingsFromBlockchain(contract)
   const [newRating, setNewRating] = React.useState(0)
+
+  listenToEvents(contract, setRatings)
 
   const isReady = signer && contract
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { ethers } from 'ethers'
+import { ethers, utils } from 'ethers'
 import { Pussikalja } from '../../typechain/Pussikalja'
 import pussikaljaContract from '../contracts/Pussikalja'
 import * as DF from 'date-fns'
@@ -38,6 +38,7 @@ export const useContract = (signer: ethers.Signer) => {
         pussikaljaContract.abi,
         signer
       ) as Pussikalja
+
       setContract(contract)
     }
   }, [signer])
@@ -60,7 +61,7 @@ export const getRatingsFromBlockchain = (contract: Pussikalja | null) => {
         )
     }
   }, [contract])
-  return ratings
+  return [ratings, setRatings] as const
 }
 
 export const addRating = (contract: Pussikalja | null, rating: number) => {
@@ -70,4 +71,33 @@ export const addRating = (contract: Pussikalja | null, rating: number) => {
       .then(tx => tx.wait())
       .then(receipt => console.log('tx complete', receipt))
   }
+}
+
+export const listenToEvents = (
+  contract: Pussikalja | null,
+  setRatings: React.Dispatch<
+    React.SetStateAction<
+      {
+        rating: number
+        timestamp: string
+      }[]
+    >
+  >
+) => {
+  React.useEffect(() => {
+    if (contract) {
+      contract.on(
+        {
+          address: contractDevAddress,
+          topics: [
+            contract.interface.getEventTopic(
+              contract.interface.getEvent('NewRating')
+            ),
+          ],
+        },
+        (rating, timestamp) =>
+          setRatings(ratings => [...ratings, { rating, timestamp }])
+      )
+    }
+  }, [contract])
 }
